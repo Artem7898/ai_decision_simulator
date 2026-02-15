@@ -11,7 +11,10 @@ RUN apt-get update && apt-get install -y \
 # Создаём README.md для прохождения проверки (если его нет)
 RUN touch README.md
 
-# Copy only pyproject.toml first (to leverage Docker caching)
+# Создаём директорию для статических файлов (обязательно для app.mount)
+RUN mkdir -p /app/static
+
+# Install Python dependencies
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir .
 
