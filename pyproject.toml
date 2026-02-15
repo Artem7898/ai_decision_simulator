@@ -66,9 +66,10 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 
-# УДАЛИТЕ секцию [tool.pytest.ini_options] из pyproject.toml
-# Вместо этого используйте отдельный файл pytest.ini
 
 [project.scripts]
 app = "app.main:app"
 run-tests = "run_tests:run_tests"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
