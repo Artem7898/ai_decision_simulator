@@ -11,15 +11,15 @@ RUN apt-get update && apt-get install -y \
 # Создаём README.md для прохождения проверки (если его нет)
 RUN touch README.md
 
+# Copy application code
+COPY app/ ./app/
+
 # Создаём директорию для статических файлов (обязательно для app.mount)
 RUN mkdir -p /app/static
 
 # Install Python dependencies
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir .
-
-# Copy application code
-COPY app/ ./app/
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
