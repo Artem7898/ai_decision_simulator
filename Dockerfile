@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Создаём пустой README.md, чтобы избежать ошибки сборки
+RUN touch README.md
+
 # Install Python dependencies
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir .
@@ -26,5 +29,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import httpx; httpx.get('http://localhost:8000/health')" || exit 1
 
-# Run application
-CMD gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 3 config.wsgi:application
+# Run application (используем JSON-формат для корректной обработки сигналов)
+CMD ["gunicorn", "--bind", "0.0.0.0:${PORT:-8000}", "--workers", "3", "config.wsgi:application"]
