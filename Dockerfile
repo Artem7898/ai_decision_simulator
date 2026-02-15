@@ -14,6 +14,9 @@ RUN touch README.md
 # Copy application code
 COPY app/ ./app/
 
+# Copy templates (including index.html)
+COPY templates/ ./templates/
+
 # Создаём директорию для статических файлов (обязательно для app.mount)
 RUN mkdir -p /app/static
 
@@ -25,7 +28,7 @@ RUN pip install --no-cache-dir .
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Expose port (это уже не так критично, но оставим для документации)
+# Expose port (для документации)
 EXPOSE 8000
 
 # Health check
