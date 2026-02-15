@@ -1,0 +1,17 @@
+2026-02-15 13:12:55,330 - httpx - INFO - HTTP Request: GET http://test/ "HTTP/1.1 200 OK"
+2026-02-15 13:12:55,331 - tests.test_api - INFO - Root endpoint: {'message': 'AI Decision Simulator API', 'name': 'AI Decision Simulator API', 'version': '1.0.0', 'description': 'API for intelligent decision simulation using Monte Carlo and LLM'}
+2026-02-15 13:12:55,335 - httpx - INFO - HTTP Request: GET http://test/health "HTTP/1.1 200 OK"
+2026-02-15 13:12:55,335 - tests.test_api - INFO - Health check: {'status': 'healthy'}
+2026-02-15 13:12:55,340 - httpx - INFO - HTTP Request: POST http://test/api/v1/simulate?query=1&decision_type=purchase&time_horizon_years=5&user_id=1 "HTTP/1.1 422 Unprocessable Entity"
+2026-02-15 13:12:55,340 - tests.test_api - INFO - Validation error response status: 422
+2026-02-15 13:12:55,341 - tests.test_api - INFO - Validation error response: {'success': False, 'error': 'Validation error', 'detail': 'query: String should have at least 3 characters'}
+2026-02-15 13:12:55,347 - httpx - INFO - HTTP Request: GET http://test/ "HTTP/1.1 200 OK"
+2026-02-15 13:12:55,348 - httpx - INFO - HTTP Request: GET http://test/health "HTTP/1.1 200 OK"
+2026-02-15 13:12:55,351 - httpx - INFO - HTTP Request: GET http://test/ "HTTP/1.1 200 OK"
+2026-02-15 13:12:55,351 - tests.test_fastapi - INFO - Root response: {'message': 'AI Decision Simulator API', 'name': 'AI Decision Simulator API', 'version': '1.0.0', 'description': 'API for intelligent decision simulation using Monte Carlo and LLM'}
+2026-02-15 13:12:55,354 - httpx - INFO - HTTP Request: GET http://test/health "HTTP/1.1 200 OK"
+2026-02-15 13:12:55,354 - tests.test_fastapi - INFO - Health check: {'status': 'healthy'}
+2026-02-15 13:12:55,357 - httpx - INFO - HTTP Request: POST http://test/api/v1/simulate?query=1&decision_type=purchase&time_horizon_years=5 "HTTP/1.1 422 Unprocessable Entity"
+2026-02-15 13:12:55,358 - tests.test_fastapi - INFO - Validation test: status=422
+2026-02-15 13:12:55,360 - tests.test_simulation - INFO - Simulation test placeholder - проверяем структуру тестов
+2026-02-15 13:12:55,362 - tests.test_simulation - INFO - DecisionType импортирован успешно

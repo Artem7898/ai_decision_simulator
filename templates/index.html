@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Decision Simulator</title>
+
+    <!-- Tailwind CSS - используем локальную версию -->
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 transition-colors duration-300" id="app">
+    <div x-data="appData" x-init="init()">
+        <!-- Навигация -->
+        <nav class="sticky top-0 z-50 glass-effect border-b border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-primary-600 p-2 rounded-lg">
+                            <i data-lucide="brain-circuit" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight">AI Decision Simulator</span>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <button @click="toggleDarkMode()"
+                                class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <i x-show="!darkMode" data-lucide="moon" class="w-5 h-5"></i>
+                            <i x-show="darkMode" data-lucide="sun" class="w-5 h-5"></i>
+                        </button>
+
+                        <button class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-all transform hover:scale-105 flex items-center space-x-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Новый сценарий</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    <!-- Главный контент -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Hero Section -->
+        <div class="text-center mb-12 animate-fade-in">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+                Принимайте решения с AI
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Интеллектуальный симулятор на базе Monte Carlo моделирования и LLM для анализа сложных жизненных решений
+            </p>
+        </div>
+
+        <!-- Типы решений -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+
+            <!-- Переезд -->
+            <div @click="activeTab = 'relocation'"
+                 :class="{ 'ring-2 ring-primary-500': activeTab === 'relocation' }"
+                 class="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1 border border-gray-200 dark:border-dark-border">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mb-4">
+                    <i data-lucide="map-pin" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Переезд</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Сравнение городов, стоимость жизни, налоги</p>
+            </div>
+
+            <!-- Покупки -->
+            <div @click="activeTab = 'purchase'"
+                 :class="{ 'ring-2 ring-primary-500': activeTab === 'purchase' }"
+                 class="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1 border border-gray-200 dark:border-dark-border">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center mb-4">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Покупки</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Авто, недвижимость, крупные инвестиции</p>
+            </div>
+
+            <!-- Работа -->
+            <div @click="activeTab = 'job'"
+                 :class="{ 'ring-2 ring-primary-500': activeTab === 'job' }"
+                 class="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1 border border-gray-200 dark:border-dark-border">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center mb-4">
+                    <i data-lucide="briefcase" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Работа</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Сравнение офферов, карьерный рост</p>
+            </div>
+
+            <!-- Инвестиции -->
+            <div @click="activeTab = 'investment'"
+                 :class="{ 'ring-2 ring-primary-500': activeTab === 'investment' }"
+                 class="bg-white dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1 border border-gray-200 dark:border-dark-border">
+                <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-xl flex items-center justify-center mb-4">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-amber-600 dark:text-amber-400"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Инвестиции</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Анализ рисков и доходности</p>
+            </div>
+        </div>
+
+        <!-- Форма симуляции -->
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl border border-gray-200 dark:border-dark-border overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-border">
+                <h2 class="text-2xl font-bold flex items-center space-x-2">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-primary-600"></i>
+                    <span>Создать сценарий</span>
+                </h2>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Название -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Название сценария</label>
+                    <input type="text"
+                           x-model="newScenario.name"
+                           placeholder="Например: Переезд в Берлин vs Амстердам"
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Описание -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Описание ситуации</label>
+                    <textarea x-model="newScenario.description"
+                              rows="4"
+                              placeholder="Опишите вашу ситуацию подробно..."
+                              class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"></textarea>
+                </div>
+
+                <!-- Параметры симуляции -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Горизонт планирования (лет)</label>
+                        <input type="range" min="1" max="20" x-model="simulationParams.timeHorizon"
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1 год</span>
+                            <span x-text="simulationParams.timeHorizon + ' лет'"></span>
+                            <span>20 лет</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Количество симуляций</label>
+                        <select x-model="simulationParams.monteCarloRuns" class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
+                            <option value="100">100 (быстро)</option>
+                            <option value="1000" selected>1,000 (рекомендуется)</option>
+                            <option value="10000">10,000 (точно)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Кнопка запуска -->
+                <button @click="runSimulation()"
+                        :disabled="isSimulating || !newScenario.description"
+                        class="w-full bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
+                    <i x-show="!isSimulating" data-lucide="play" class="w-5 h-5"></i>
+                    <i x-show="isSimulating" data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                    <span x-text="isSimulating ? 'Симуляция запущена...' : 'Запустить AI анализ'"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Результаты симуляции (показываются после запуска) -->
+        <div x-show="showResults && simulationResult"
+             x-transition:enter="transition ease-out duration-500"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Основная метрика -->
+            <div class="lg:col-span-2 bg-white dark:bg-dark-card rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-xl font-bold mb-4 flex items-center space-x-2">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-primary-600"></i>
+                    <span>Результаты симуляции</span>
+                </h3>
+
+                <!-- Placeholder для графика -->
+                <div class="h-64 bg-gradient-to-br from-primary-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-xl flex items-center justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-20">
+                        <svg class="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
+                            <path d="M0,150 Q100,100 200,120 T400,80" fill="none" stroke="currentColor" stroke-width="2" class="text-primary-600"/>
+                            <path d="M0,180 Q100,140 200,160 T400,120" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-600"/>
+                        </svg>
+                    </div>
+                    <div class="text-center z-10" x-show="simulationResult && simulationResult.data && simulationResult.data.result_json">
+                        <div class="text-4xl font-bold text-primary-600 mb-2"
+                             x-text="(simulationResult.data.result_json.ai_report?.confidence_score * 100).toFixed(0) + '%' || '0%'">
+                        </div>
+                        <div class="text-gray-600 dark:text-gray-400">Уверенность в решении</div>
+                    </div>
+                </div>
+
+                <!-- Метрики -->
+                <div class="grid grid-cols-3 gap-4 mt-6">
+                    <div class="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" x-text="activeTab === 'investment' ? '+15%' : '+€45K'"></div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">Ожидаемая выгода</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div class="text-2xl font-bold text-amber-600">12%</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">Риск неудачи</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600">5.2</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400">Оценка качества жизни</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Рекомендация -->
+            <div class="bg-gradient-to-br from-primary-600 to-purple-700 rounded-2xl shadow-xl p-6 text-white">
+                <h3 class="text-xl font-bold mb-4 flex items-center space-x-2">
+                    <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                    <span>AI Рекомендация</span>
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="bg-white/10 backdrop-blur rounded-lg p-4">
+                        <div class="font-semibold mb-2">Рекомендация:</div>
+                        <div class="text-lg" x-text="simulationResult?.data?.result_json?.ai_report?.recommendation || 'Анализ в процессе...'"></div>
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 text-green-300"></i>
+                            <span x-text="simulationResult?.data?.result_json?.ai_report?.risks?.[0] || 'Анализ рисков...'"></span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 mt-0.5 text-green-300"></i>
+                            <span x-text="simulationResult?.data?.result_json?.ai_report?.risks?.[1] || 'Детальный анализ...'"></span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 text-yellow-300"></i>
+                            <span x-text="simulationResult?.data?.result_json?.ai_report?.risks?.[2] || 'Ограничения данных...'"></span>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-white text-primary-700 font-semibold py-3 rounded-lg hover:bg-gray-100 transition-colors mt-4"
+                            @click="downloadReport()">
+                        Скачать полный отчет
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- История сценариев -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold mb-6">История сценариев</h2>
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-lg border border-gray-200 dark:border-dark-border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-dark-border">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Название</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Тип</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                                <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <td class="px-6 py-4 font-medium">Переезд в Берлин</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        Переезд
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="flex items-center space-x-1 text-green-600">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                        <span>Завершено</span>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">10 фев 2025</td>
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    <button class="text-primary-600 hover:text-primary-800 dark:hover:text-primary-400">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800 dark:hover:text-red-400">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="mt-16 border-t border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <i data-lucide="brain-circuit" class="w-5 h-5 text-primary-600"></i>
+                    <span class="font-semibold">AI Decision Simulator</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    © 2025 AI Decision Simulator. Built with FastAPI & Tailwind CSS
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Скрипт для работы с API -->
+     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('appData', () => ({
+                darkMode: false,
+                activeTab: 'relocation',
+                isSimulating: false,
+                showResults: false,
+                simulationResult: null,
+                newScenario: {
+                    name: '',
+                    description: '',
+                    decision_type: 'relocation'
+                },
+                simulationParams: {
+                    timeHorizon: 5,
+                    monteCarloRuns: 1000
+                },
+
+                init() {
+                    // Проверяем сохраненную тему
+                    const savedDarkMode = localStorage.getItem('darkMode');
+                    this.darkMode = savedDarkMode === 'true';
+
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+
+                    // Инициализируем иконки
+                    if (window.lucide) {
+                        window.lucide.createIcons();
+                    }
+                },
+
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    localStorage.setItem('darkMode', this.darkMode);
+
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                },
+
+                async runSimulation() {
+                    if (!this.newScenario.description.trim()) {
+                        alert('Пожалуйста, опишите ситуацию для анализа');
+                        return;
+                    }
+
+                    this.isSimulating = true;
+                    this.showResults = false;
+
+                    try {
+                        // Проверяем минимальную длину query
+                         const query = this.newScenario.description.trim();
+                             if (query.length < 3) {
+                             alert('Запрос должен содержать минимум 3 символа');
+                             this.isSimulating = false;
+                             return;
+                         }
+                        const decisionType = this.activeTab;
+                        const timeHorizon = this.simulationParams.timeHorizon;
+
+                        const response = await fetch(
+                            `/api/v1/simulate?query=${encodeURIComponent(query)}&decision_type=${decisionType}&time_horizon_years=${timeHorizon}`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        this.simulationResult = result;
+
+                        if (result.success) {
+                            this.showResults = true;
+
+                            // Обновляем иконки
+                            if (window.lucide) {
+                                window.lucide.createIcons();
+                            }
+                        } else {
+                            alert(`Ошибка: ${result.error || 'Неизвестная ошибка'}`);
+                        }
+                    } catch (error) {
+                        console.error('Ошибка при запуске симуляции:', error);
+                        alert('Ошибка при запуске симуляции. Проверьте консоль для подробностей.');
+                    } finally {
+                        this.isSimulating = false;
+                    }
+                },
+
+                downloadReport() {
+                    if (!this.simulationResult?.data?.result_json) {
+                        alert('Нет данных для отчета');
+                        return;
+                    }
+
+                    const data = JSON.stringify(this.simulationResult.data.result_json, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ai-decision-report-${new Date().toISOString().slice(0, 10)}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }));
+        });
+    </script>
+
+</body>
+</html>
